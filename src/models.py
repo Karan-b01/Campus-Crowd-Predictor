@@ -196,3 +196,23 @@ def build_model_zoo(
     }
     LOGGER.info("Built %s sklearn model pipelines.", len(pipelines))
     return pipelines
+
+
+def predict_features(pipeline: Pipeline, features: pd.DataFrame) -> np.ndarray:
+    """Predict non-negative crowd counts with a fitted model Pipeline.
+
+    Args:
+        pipeline: A fitted pipeline returned by ``build_model_zoo``.
+        features: Feature frame matching the pipeline's training scenario.
+
+    Returns:
+        One non-negative prediction per input row.
+
+    Raises:
+        sklearn.exceptions.NotFittedError: If the pipeline has not been fit.
+
+
+    """
+    check_is_fitted(pipeline)
+    predictions = np.asarray(pipeline.predict(features), dtype=float).reshape(-1)
+    return np.maximum(predictions, PREDICTION_MINIMUM)
