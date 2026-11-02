@@ -9,6 +9,7 @@ SUPPORTED_RAW_EXTENSIONS = (".csv", ".arff")
 PROCESSED_DATA_DIR = DATA_DIR / "processed"
 NOTEBOOKS_DIR = PROJECT_ROOT / "notebooks"
 EDA_NOTEBOOK_PATH = NOTEBOOKS_DIR / "01_eda.ipynb"
+EVALUATION_NOTEBOOK_PATH = NOTEBOOKS_DIR / "02_evaluation.ipynb"
 SRC_DIR = PROJECT_ROOT / "src"
 APP_DIR = PROJECT_ROOT / "app"
 MODELS_DIR = PROJECT_ROOT / "models"
@@ -20,6 +21,35 @@ SPLIT_SUMMARY_PATH = REPORTS_DIR / "split_summary.md"
 BASELINE_REPORT_PATH = REPORTS_DIR / "baselines.md"
 EXPERIMENTS_PATH = REPORTS_DIR / "experiments.csv"
 FIGURES_DIR = REPORTS_DIR / "figures"
+MODEL_COMPARISON_PATH = REPORTS_DIR / "model_comparison.md"
+TUNING_REPORT_PATH = REPORTS_DIR / "tuning_results.md"
+FINAL_TEST_RESULTS_PATH = REPORTS_DIR / "final_test_results.md"
+EVALUATION_SUMMARY_PATH = REPORTS_DIR / "evaluation_summary.md"
+EVALUATION_ERROR_TABLE_PATH = REPORTS_DIR / "validation_error_analysis.csv"
+EVALUATION_IMPORTANCE_PATH = REPORTS_DIR / "validation_permutation_importance.csv"
+EVALUATION_SHAP_IMPORTANCE_PATH = MODELS_DIR / "validation_shap_importance.csv"
+EVALUATION_PREDICTIONS_PATH = REPORTS_DIR / "validation_predictions.csv"
+TUNING_HISTORY_FIGURE_PATH = FIGURES_DIR / "optuna_optimization_history.png"
+TUNING_IMPORTANCE_FIGURE_PATH = FIGURES_DIR / "optuna_parameter_importance.png"
+TUNING_LEARNING_CURVE_FIGURE_PATH = FIGURES_DIR / "tuned_model_learning_curve.png"
+EVALUATION_ERROR_FIGURE_PATH = FIGURES_DIR / "evaluation_validation_error_profiles.png"
+EVALUATION_LEVEL_FIGURE_PATH = FIGURES_DIR / "evaluation_crowd_level_confusion.png"
+EVALUATION_IMPORTANCE_FIGURE_PATH = (
+    FIGURES_DIR / "evaluation_permutation_importance.png"
+)
+EVALUATION_SHAP_SUMMARY_FIGURE_PATH = FIGURES_DIR / "evaluation_shap_global_summary.png"
+EVALUATION_SHAP_HOUR_FIGURE_PATH = FIGURES_DIR / "evaluation_shap_dependence_hour.png"
+EVALUATION_SHAP_TEMP_FIGURE_PATH = (
+    FIGURES_DIR / "evaluation_shap_dependence_temperature.png"
+)
+EVALUATION_SHAP_LOCAL_FIGURE_PATHS = [
+    FIGURES_DIR / f"evaluation_shap_local_{index}.png" for index in (1, 2, 3)
+]
+MODEL_VALIDATION_MAE_FIGURE_PATH = FIGURES_DIR / "model_validation_mae.png"
+MODEL_TOP3_SCATTER_FIGURE_PATH = FIGURES_DIR / "model_top3_predicted_vs_actual.png"
+MODEL_REPRESENTATIVE_WEEK_FIGURE_PATH = (
+    FIGURES_DIR / "model_representative_week_predictions.png"
+)
 TESTS_DIR = PROJECT_ROOT / "tests"
 TEST_TEMP_DIR = PROJECT_ROOT / ".tmp"
 
@@ -216,13 +246,6 @@ NOWCAST_LAG_FEATURE_COLUMNS = [
     "crowd_rolling_std_3h",
 ]
 
-MODEL_COMPARISON_PATH = REPORTS_DIR / "model_comparison.md"
-MODEL_VALIDATION_MAE_FIGURE_PATH = FIGURES_DIR / "model_validation_mae.png"
-MODEL_TOP3_SCATTER_FIGURE_PATH = FIGURES_DIR / "model_top3_predicted_vs_actual.png"
-MODEL_REPRESENTATIVE_WEEK_FIGURE_PATH = (
-    FIGURES_DIR / "model_representative_week_predictions.png"
-)
-
 MODEL_RIDGE_ALPHA = 10.0
 MODEL_ELASTICNET_ALPHA = 0.05
 MODEL_ELASTICNET_L1_RATIO = 0.5
@@ -253,13 +276,6 @@ MODEL_REFERENCE_LINE_WIDTH = 1.0
 MODEL_MIN_COMPLETE_WEEK_ROWS = EDA_READINGS_PER_DAY * EDA_WEEK_DAYS
 FORECAST_BEST_MODEL_PATH = MODELS_DIR / "best_forecast_pipeline.joblib"
 NOWCAST_BEST_MODEL_PATH = MODELS_DIR / "best_nowcast_pipeline.joblib"
-
-TUNING_REPORT_PATH = REPORTS_DIR / "tuning_results.md"
-FINAL_TEST_RESULTS_PATH = REPORTS_DIR / "final_test_results.md"
-TUNING_HISTORY_FIGURE_PATH = FIGURES_DIR / "optuna_optimization_history.png"
-TUNING_IMPORTANCE_FIGURE_PATH = FIGURES_DIR / "optuna_parameter_importance.png"
-TUNING_LEARNING_CURVE_FIGURE_PATH = FIGURES_DIR / "tuned_model_learning_curve.png"
-
 TUNED_BEST_MODEL_PATH = MODELS_DIR / "best_tuned_forecast_pipeline.joblib"
 TUNED_MODEL_METADATA_PATH = MODELS_DIR / "best_tuned_forecast_metadata.json"
 PREDICTION_INTERVAL_PATH = MODELS_DIR / "prediction_interval.json"
@@ -292,6 +308,17 @@ TUNING_LEARNING_CURVE_FRACTIONS = [0.2, 0.4, 0.6, 0.8, 1.0]
 PREDICTION_INTERVAL_LOWER_QUANTILE = 0.05
 PREDICTION_INTERVAL_UPPER_QUANTILE = 0.95
 PREDICTION_INTERVAL_CV_SPLITS = TIME_SERIES_CV_SPLITS
+CROWD_LEVEL_QUANTILES = (1 / 3, 2 / 3)
+CROWD_LEVEL_LABELS = ("Low", "Medium", "High")
+EVALUATION_PERMUTATION_REPEATS = 5
+EVALUATION_SHAP_SAMPLE_ROWS = 500
+EVALUATION_MIN_GROUP_ROWS = 50
+EVALUATION_MEAN_SHIFT_RELEVANCE_PEOPLE = 3.0
+EVALUATION_ERROR_FIGURE_SIZE = (16, 12)
+EVALUATION_FIGURE_SIZE = (12, 7)
+EVALUATION_PLOT_DPI = EDA_FIGURE_DPI
+EVALUATION_INTERVAL_LOWER_QUANTILE = 0.10
+EVALUATION_INTERVAL_UPPER_QUANTILE = 0.90
 
 if abs(TRAIN_FRACTION + VALIDATION_FRACTION + TEST_FRACTION - 1.0) > 1e-9:
     raise ValueError("Chronological split fractions must sum to 1.0.")
