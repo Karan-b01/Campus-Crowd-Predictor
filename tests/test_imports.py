@@ -10,6 +10,7 @@ import pytest
     [
         "src",
         "src.config",
+        "src.audit",
         "src.data",
         "src.features",
         "src.models",

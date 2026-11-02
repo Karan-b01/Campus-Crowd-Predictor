@@ -1,4 +1,4 @@
-.PHONY: setup lint test train app
+.PHONY: setup lint test audit train app
 
 ifeq ($(OS),Windows_NT)
 SHELL = cmd.exe
@@ -17,6 +17,9 @@ lint:
 
 test:
 	$(PYTHON) -m pytest
+
+audit:
+	$(PYTHON) -m src.audit
 
 train:
 	$(PYTHON) -m src.train
