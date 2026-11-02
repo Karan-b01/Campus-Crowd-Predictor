@@ -329,7 +329,7 @@ def build_preprocessor(
                         ),
                         (
                             "encoder",
-                            OneHotEncoder(handle_unknown="ignore", sparse_output=True),
+                            OneHotEncoder(handle_unknown="ignore", sparse_output=False),
                         ),
                     ]
                 ),
