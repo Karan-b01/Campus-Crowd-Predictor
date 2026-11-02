@@ -216,3 +216,103 @@ def predict_features(pipeline: Pipeline, features: pd.DataFrame) -> np.ndarray:
     check_is_fitted(pipeline)
     predictions = np.asarray(pipeline.predict(features), dtype=float).reshape(-1)
     return np.maximum(predictions, PREDICTION_MINIMUM)
+
+
+@dataclass(frozen=True)
+class PredictionResult:
+    """A single non-negative crowd estimate and its empirical prediction band."""
+
+    count: float
+    lower: float
+    upper: float
+
+
+def _prediction_input(
+    prediction_datetime: DateTime | pd.Timestamp,
+    temperature: float,
+    is_holiday: bool,
+    is_during_semester: bool,
+    is_start_of_semester: bool,
+) -> pd.DataFrame:
+    """Turn app inputs into the raw calendar row expected by feature code."""
+    moment = pd.Timestamp(prediction_datetime)
+    if moment.tzinfo is not None:
+        # Preserve the wall-clock time entered by the user; gym calendar fields
+        # and the dataset's date column are defined in local campus time.
+        moment = moment.tz_localize(None)
+    hour = moment.hour
+    return pd.DataFrame(
+        [
+            {
+                DATE_COLUMN: moment.strftime("%Y-%m-%d %H:%M:%S"),
+                "timestamp": hour * 3600 + moment.minute * 60 + moment.second,
+                "day_of_week": moment.day_of_week,
+                "is_weekend": int(moment.day_of_week >= 5),
+                "is_holiday": int(is_holiday),
+                "temperature": float(temperature),
+                "is_start_of_semester": int(is_start_of_semester),
+                "is_during_semester": int(is_during_semester),
+                "month": moment.month,
+                "hour": hour,
+            }
+        ]
+    )
+
+
+def predict(
+    datetime: DateTime | pd.Timestamp,
+    temperature: float,
+    is_holiday: bool,
+    is_during_semester: bool,
+    is_start_of_semester: bool,
+) -> PredictionResult:
+    """Load the saved Forecast pipeline and predict with an empirical interval.
+
+    Args:
+        datetime: Local campus date and time to forecast.
+        temperature: Expected temperature in the dataset's recorded unit.
+        is_holiday: Whether the date is marked as a holiday.
+        is_during_semester: Whether classes are in session.
+        is_start_of_semester: Whether the date marks a semester start.
+
+    Returns:
+        A prediction count with lower and upper empirical residual bounds.
+
+    Raises:
+        FileNotFoundError: If final trained model or interval artifact is absent.
+        ValueError: If inputs are invalid or artifacts contain invalid bounds.
+
+    """
+    if not np.isfinite(temperature):
+        raise ValueError("Temperature must be a finite number.")
+    pipeline_path = Path(TUNED_BEST_MODEL_PATH)
+    interval_path = Path(PREDICTION_INTERVAL_PATH)
+    if not pipeline_path.is_file() or not interval_path.is_file():
+        raise FileNotFoundError(
+            "Tuned Forecast artifacts are missing; run `make tune` first."
+        )
+    pipeline = joblib.load(pipeline_path)
+    with interval_path.open(encoding="utf-8") as interval_file:
+        residual_bounds: dict[str, Any] = json.load(interval_file)
+    features = build_feature_set(
+        _prediction_input(
+            datetime,
+            temperature,
+            is_holiday,
+            is_during_semester,
+            is_start_of_semester,
+        ),
+        scenario="forecast",
+    )
+    count = float(predict_features(pipeline, features)[0])
+    lower = min(
+        count,
+        max(PREDICTION_MINIMUM, count + float(residual_bounds["lower_residual"])),
+    )
+    upper = max(
+        count,
+        max(PREDICTION_MINIMUM, count + float(residual_bounds["upper_residual"])),
+    )
+    if lower > upper:
+        raise ValueError("Prediction interval artifact has reversed residual bounds.")
+    return PredictionResult(count=count, lower=lower, upper=upper)
