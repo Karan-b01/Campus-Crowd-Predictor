@@ -254,5 +254,44 @@ MODEL_MIN_COMPLETE_WEEK_ROWS = EDA_READINGS_PER_DAY * EDA_WEEK_DAYS
 FORECAST_BEST_MODEL_PATH = MODELS_DIR / "best_forecast_pipeline.joblib"
 NOWCAST_BEST_MODEL_PATH = MODELS_DIR / "best_nowcast_pipeline.joblib"
 
+TUNING_REPORT_PATH = REPORTS_DIR / "tuning_results.md"
+FINAL_TEST_RESULTS_PATH = REPORTS_DIR / "final_test_results.md"
+TUNING_HISTORY_FIGURE_PATH = FIGURES_DIR / "optuna_optimization_history.png"
+TUNING_IMPORTANCE_FIGURE_PATH = FIGURES_DIR / "optuna_parameter_importance.png"
+TUNING_LEARNING_CURVE_FIGURE_PATH = FIGURES_DIR / "tuned_model_learning_curve.png"
+
+TUNED_BEST_MODEL_PATH = MODELS_DIR / "best_tuned_forecast_pipeline.joblib"
+TUNED_MODEL_METADATA_PATH = MODELS_DIR / "best_tuned_forecast_metadata.json"
+PREDICTION_INTERVAL_PATH = MODELS_DIR / "prediction_interval.json"
+
+# Tuning uses chronological folds within training only. Ten trials per model
+# keeps the search broad enough to compare useful settings without an excessive
+# runtime for this dataset and its tree ensembles.
+TUNING_MODEL_NAMES = ["Random Forest", "HistGradientBoosting Poisson"]
+TUNING_TRIALS_PER_MODEL = 10
+TUNING_CV_SPLITS = 3
+TUNING_MIN_TRAINING_ROWS = 2
+TUNING_PARAMETER_SPACES = {
+    "Random Forest": {
+        "n_estimators": (100, 240),
+        "max_depth": (8, 28),
+        "min_samples_leaf": (1, 10),
+        "max_features": (0.5, 1.0),
+    },
+    "HistGradientBoosting Poisson": {
+        "max_iter": (80, 240),
+        "learning_rate": (0.02, 0.15),
+        "max_leaf_nodes": (15, 63),
+        "min_samples_leaf": (10, 60),
+        "l2_regularization": (0.01, 10.0),
+    },
+}
+TUNING_FIGURE_SIZE = (10, 6)
+TUNING_PLOT_DPI = 200
+TUNING_LEARNING_CURVE_FRACTIONS = [0.2, 0.4, 0.6, 0.8, 1.0]
+PREDICTION_INTERVAL_LOWER_QUANTILE = 0.05
+PREDICTION_INTERVAL_UPPER_QUANTILE = 0.95
+PREDICTION_INTERVAL_CV_SPLITS = TIME_SERIES_CV_SPLITS
+
 if abs(TRAIN_FRACTION + VALIDATION_FRACTION + TEST_FRACTION - 1.0) > 1e-9:
     raise ValueError("Chronological split fractions must sum to 1.0.")
