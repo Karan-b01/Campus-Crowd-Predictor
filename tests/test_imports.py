@@ -15,6 +15,7 @@ import pytest
         "src.features",
         "src.models",
         "src.evaluate",
+        "src.interpretability",
         "src.utils",
     ],
 )
