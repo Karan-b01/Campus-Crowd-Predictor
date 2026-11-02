@@ -14,11 +14,13 @@ import pandas as pd
 from sklearn.base import BaseEstimator, clone
 from sklearn.linear_model import LinearRegression
 from sklearn.model_selection import TimeSeriesSplit
+from threadpoolctl import threadpool_limits
 
 from src.config import (
     BASELINE_REPORT_PATH,
     DATETIME_COLUMN,
     EXPERIMENTS_PATH,
+    MODEL_N_JOBS,
     PREDICTION_MINIMUM,
     TARGET_COLUMN,
     TIME_SERIES_CV_GAP,
@@ -173,15 +175,19 @@ def time_series_cross_validate(
         raise ValueError("Cross-validation target must contain only finite values.")
     splitter = TimeSeriesSplit(n_splits=n_splits, gap=gap)
     rows: list[dict[str, float | int]] = []
-    for fold, (train_indices, validation_indices) in enumerate(
-        splitter.split(features), start=1
-    ):
-        fold_estimator = clone(estimator)
-        fold_estimator.fit(features.iloc[train_indices], y_values[train_indices])
-        predictions = fold_estimator.predict(features.iloc[validation_indices])
-        rows.append(
-            {"fold": fold, **compute_metrics(y_values[validation_indices], predictions)}
-        )
+    with threadpool_limits(limits=MODEL_N_JOBS):
+        for fold, (train_indices, validation_indices) in enumerate(
+            splitter.split(features), start=1
+        ):
+            fold_estimator = clone(estimator)
+            fold_estimator.fit(features.iloc[train_indices], y_values[train_indices])
+            predictions = fold_estimator.predict(features.iloc[validation_indices])
+            rows.append(
+                {
+                    "fold": fold,
+                    **compute_metrics(y_values[validation_indices], predictions),
+                }
+            )
 
     fold_scores = pd.DataFrame(rows)
     summary = pd.DataFrame(
