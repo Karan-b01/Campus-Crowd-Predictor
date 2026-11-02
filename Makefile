@@ -12,8 +12,8 @@ setup:
 	python -m pip --python "$(PYTHON)" install -r requirements.txt
 
 lint:
-	$(PYTHON) -m ruff check src tests
-	$(PYTHON) -m ruff format --check src tests
+	$(PYTHON) -m ruff check src tests scripts
+	$(PYTHON) -m ruff format --check src tests scripts
 
 test:
 	$(PYTHON) -m pytest
@@ -22,7 +22,9 @@ audit:
 	$(PYTHON) -m src.audit
 
 train:
-	$(PYTHON) -m src.train
+	$(PYTHON) -m scripts.train_models
+
+tune:
 
 app:
 	$(PYTHON) -m streamlit run app/main.py
