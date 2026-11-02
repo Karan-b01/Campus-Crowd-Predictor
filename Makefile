@@ -1,4 +1,4 @@
-.PHONY: setup lint test audit train app
+.PHONY: setup lint test audit train tune app
 
 ifeq ($(OS),Windows_NT)
 SHELL = cmd.exe
@@ -23,8 +23,12 @@ audit:
 
 train:
 	$(PYTHON) -m scripts.train_models
+	$(PYTHON) -m scripts.tune_models
 
 tune:
+
+tune:
+	$(PYTHON) -m scripts.tune_models
 
 app:
 	$(PYTHON) -m streamlit run app/main.py
