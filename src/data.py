@@ -1,6 +1,7 @@
 """Loading, schema validation, and datetime parsing for raw gym data."""
 
 import re
+from collections.abc import Mapping
 from pathlib import Path
 
 import numpy as np
@@ -13,7 +14,11 @@ from src.config import (
     EXPECTED_RAW_COLUMNS,
     INTEGER_COLUMNS,
     RAW_DATA_DIR,
+    SPLIT_SUMMARY_PATH,
     SUPPORTED_RAW_EXTENSIONS,
+    TEST_FRACTION,
+    TRAIN_FRACTION,
+    VALIDATION_FRACTION,
     VALUE_RANGES,
 )
 from src.utils import get_logger
@@ -259,3 +264,103 @@ def parse_datetime(
         int(duplicate_rows.sum()),
     )
     return result
+
+
+def split_chronologically(df: pd.DataFrame) -> dict[str, pd.DataFrame]:
+    """Split observations 70/15/15 after sorting them by timestamp.
+
+    The chronological order is essential: later observations must not appear
+    in the training partition when we evaluate future predictions. The
+    timestamp column is retained in each returned partition so exact date
+    ranges can be reported without consulting target values.
+
+    Args:
+        df: Raw rows containing the date column.
+
+    Returns:
+        A mapping with ``train``, ``validation``, and ``test`` DataFrames.
+
+    Raises:
+        ValueError: If fewer than three rows are available for non-empty
+            partitions.
+
+    """
+    if len(df) < 3:
+        raise ValueError("At least three rows are required for chronological splits.")
+    ordered = parse_datetime(df)
+    train_end = int(len(ordered) * TRAIN_FRACTION)
+    validation_end = int(len(ordered) * (TRAIN_FRACTION + VALIDATION_FRACTION))
+    if train_end == 0 or validation_end <= train_end or validation_end >= len(ordered):
+        raise ValueError(
+            "The dataset is too small to create non-empty train, validation, "
+            "and test partitions with the configured fractions."
+        )
+
+    splits = {
+        "train": ordered.iloc[:train_end].copy(),
+        "validation": ordered.iloc[train_end:validation_end].copy(),
+        "test": ordered.iloc[validation_end:].copy(),
+    }
+    for name, split in splits.items():
+        LOGGER.info(
+            "%s split: %s rows, %s through %s.",
+            name.title(),
+            len(split),
+            split[DATETIME_COLUMN].iloc[0].isoformat(),
+            split[DATETIME_COLUMN].iloc[-1].isoformat(),
+        )
+    return splits
+
+
+def write_split_summary(
+    splits: Mapping[str, pd.DataFrame], path: Path = SPLIT_SUMMARY_PATH
+) -> Path:
+    """Write exact chronological ranges and row counts for each partition.
+
+    Args:
+        splits: Mapping returned by ``split_chronologically``.
+        path: Optional output path, primarily useful for isolated tests.
+
+    Returns:
+        The path where the Markdown summary was saved.
+
+    Raises:
+        ValueError: If a split is empty or lacks parsed timestamps.
+
+    """
+    expected_names = ("train", "validation", "test")
+    rows: list[str] = []
+    for name in expected_names:
+        if name not in splits:
+            raise ValueError(f"Split summary is missing the '{name}' partition.")
+        split = splits[name]
+        if split.empty or DATETIME_COLUMN not in split:
+            raise ValueError(
+                f"The '{name}' partition must have rows and a "
+                f"'{DATETIME_COLUMN}' column."
+            )
+        start = pd.Timestamp(split[DATETIME_COLUMN].iloc[0]).isoformat()
+        end = pd.Timestamp(split[DATETIME_COLUMN].iloc[-1]).isoformat()
+        rows.append(f"| {name.title()} | {len(split):,} | {start} | {end} |")
+
+    content = "\n".join(
+        [
+            "# Chronological Data Split Summary",
+            "",
+            f"Rows are sorted by parsed UTC timestamp before splitting. The "
+            f"configured fractions are {TRAIN_FRACTION:.0%} train, "
+            f"{VALIDATION_FRACTION:.0%} validation, and {TEST_FRACTION:.0%} "
+            "test; integer boundaries use floor rounding, with any remainder "
+            "assigned to test. The test partition is reserved for final "
+            "reporting and is not used in baseline selection.",
+            "",
+            "| Partition | Rows | First timestamp (UTC) | Last timestamp (UTC) |",
+            "| --- | ---: | --- | --- |",
+            *rows,
+            "",
+        ]
+    )
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(content, encoding="utf-8")
+    LOGGER.info("Saved chronological split ranges to %s.", path)
+    return path

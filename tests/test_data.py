@@ -7,8 +7,14 @@ from pathlib import Path
 import pandas as pd
 import pytest
 
-from src.config import EXPECTED_RAW_COLUMNS, TEST_TEMP_DIR
-from src.data import load_raw, parse_datetime, validate_schema
+from src.config import DATETIME_COLUMN, EXPECTED_RAW_COLUMNS, TEST_TEMP_DIR
+from src.data import (
+    load_raw,
+    parse_datetime,
+    split_chronologically,
+    validate_schema,
+    write_split_summary,
+)
 
 
 def _valid_data() -> pd.DataFrame:
@@ -144,3 +150,39 @@ def test_load_raw_reads_csv() -> None:
         assert loaded.to_dict(orient="records") == [{"date": "2024-01-01", "count": 3}]
     finally:
         raw_path.unlink(missing_ok=True)
+
+
+def test_chronological_split_has_no_overlap_and_preserves_order() -> None:
+    """Create 70/15/15 non-overlapping partitions in timestamp order."""
+    base_row = _valid_data().iloc[0].to_dict()
+    times = pd.date_range("2024-01-01 08:00:00", periods=20, freq="10min", tz="UTC")
+    rows = []
+    for timestamp in times:
+        row = base_row.copy()
+        row["date"] = timestamp.isoformat()
+        rows.append(row)
+
+    splits = split_chronologically(pd.DataFrame(rows, columns=EXPECTED_RAW_COLUMNS))
+    train, validation, test = (
+        splits["train"],
+        splits["validation"],
+        splits["test"],
+    )
+
+    assert [len(train), len(validation), len(test)] == [14, 3, 3]
+    assert train[DATETIME_COLUMN].max() < validation[DATETIME_COLUMN].min()
+    assert validation[DATETIME_COLUMN].max() < test[DATETIME_COLUMN].min()
+    assert train[DATETIME_COLUMN].is_monotonic_increasing
+    assert validation[DATETIME_COLUMN].is_monotonic_increasing
+    assert test[DATETIME_COLUMN].is_monotonic_increasing
+    assert not set(train[DATETIME_COLUMN]) & set(validation[DATETIME_COLUMN])
+    assert not set(validation[DATETIME_COLUMN]) & set(test[DATETIME_COLUMN])
+
+    summary_path = _write_temporary_file(".md", "")
+    try:
+        write_split_summary(splits, summary_path)
+        summary = summary_path.read_text(encoding="utf-8")
+        assert times[0].isoformat() in summary
+        assert times[-1].isoformat() in summary
+    finally:
+        summary_path.unlink(missing_ok=True)
