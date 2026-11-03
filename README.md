@@ -1,11 +1,11 @@
-# Campus Gym Occupancy Forecaster
+#                                Campus Gym Occupancy Forecaster
 
 <div align="center">
 
 **An End-to-End Predictive Intelligence System & Interactive Operations Dashboard**  
 *Built for the **AWS Student Builder Group — VIT Vellore** Milestone Task*
 
-[![GitHub Repository](https://img.shields.io/badge/Repository-karan--b01%2Fcampus--crowd--prediction-181717?style=flat-square&logo=github)](https://github.com/karan-b01/campus-crowd-prediction)
+[![GitHub Repository](https://img.shields.io/badge/Repository-Karan--b01%2Fcampus--crowd--prediction-181717?style=flat-square&logo=github)](https://github.com/karan-b01/campus-crowd-prediction)
 [![Python Version](https://img.shields.io/badge/Python-3.10%20%7C%203.11%20%7C%203.12-3776AB?style=flat-square&logo=python&logoColor=white)](https://www.python.org/)
 [![Streamlit App](https://img.shields.io/badge/Streamlit-1.40%2B-FF4B4B?style=flat-square&logo=streamlit&logoColor=white)](https://streamlit.io/)
 [![Scikit-Learn](https://img.shields.io/badge/Scikit--Learn-1.5%2B-F7931E?style=flat-square&logo=scikitlearn&logoColor=white)](https://scikit-learn.org/)
@@ -312,7 +312,7 @@ ENTRYPOINT ["streamlit", "run", "app/app.py", "--server.port=8501", "--server.ad
 
 ## 🏛️ Project Metadata & Author
 
-* **Author:** Karan ([@karan-b01](https://github.com/karan-b01))
+* **Author:** Karan ([@Karan-b01](https://github.com/Karan-b01))
 * **Initiative:** AWS Student Builder Group
 * **Institution:** Vellore Institute of Technology (VIT), Vellore, Tamil Nadu, India
 * **Domain:** Applied Machine Learning, Cloud Architecture & Operations Analytics
