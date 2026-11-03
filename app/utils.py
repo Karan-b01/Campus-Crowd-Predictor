@@ -8,7 +8,9 @@ EDA dataset aggregation helpers.
 from __future__ import annotations
 
 import json
-from datetime import date as Date, datetime as DateTime, time as Time, timedelta
+from datetime import date as Date
+from datetime import datetime as DateTime
+from datetime import timedelta
 from pathlib import Path
 from typing import Any
 
@@ -19,14 +21,9 @@ from sklearn.pipeline import Pipeline
 
 from src.config import (
     DATE_COLUMN,
-    EVALUATION_ERROR_TABLE_PATH,
-    EVALUATION_IMPORTANCE_PATH,
-    EVALUATION_PREDICTIONS_PATH,
     EVALUATION_SHAP_IMPORTANCE_PATH,
-    FINAL_TEST_RESULTS_PATH,
     PREDICTION_INTERVAL_PATH,
     PREDICTION_MINIMUM,
-    RAW_DATA_DIR,
     TUNED_BEST_MODEL_PATH,
     TUNED_MODEL_METADATA_PATH,
 )
@@ -58,9 +55,7 @@ def _load_model_artifacts() -> tuple[Pipeline, dict[str, Any], dict[str, Any]]:
             f"Forecast model file missing at {model_path}. Please run `make tune`."
         )
     if not interval_path.is_file():
-        raise FileNotFoundError(
-            f"Prediction interval file missing at {interval_path}."
-        )
+        raise FileNotFoundError(f"Prediction interval file missing at {interval_path}.")
 
     pipeline: Pipeline = joblib.load(model_path)
 
@@ -105,12 +100,15 @@ def get_crowd_thresholds(metadata: dict[str, Any] | None = None) -> tuple[float,
 
 
 def classify_crowd_level(
-    count: float, low_max: float = DEFAULT_LOW_THRESHOLD, med_max: float = DEFAULT_MEDIUM_THRESHOLD
+    count: float,
+    low_max: float = DEFAULT_LOW_THRESHOLD,
+    med_max: float = DEFAULT_MEDIUM_THRESHOLD,
 ) -> tuple[str, str, str, str]:
     """Classify crowd into Low, Medium, High with badge classes and hex codes.
 
     Returns:
         tuple of (label, badge_class, hex_color, description)
+
     """
     if count <= low_max:
         return (
@@ -231,7 +229,9 @@ def predict_day_curve(
 
     base_dt = DateTime(selected_date.year, selected_date.month, selected_date.day, 0, 0)
     minutes_in_day = 24 * 60
-    timestamps = [base_dt + timedelta(minutes=m) for m in range(0, minutes_in_day, step_minutes)]
+    timestamps = [
+        base_dt + timedelta(minutes=m) for m in range(0, minutes_in_day, step_minutes)
+    ]
 
     df_input = make_calendar_input_frame(
         timestamps, temperature, is_holiday, is_during_semester, is_start_of_semester
@@ -270,20 +270,28 @@ def predict_day_curve(
 def find_visiting_recommendation(day_df: pd.DataFrame) -> dict[str, Any]:
     """Find the quietest visiting window and peak rush hour during facility hours."""
     # Filter for standard operating hours (e.g. 06:00 to 22:00)
-    operating_df = day_df[(day_df["hour"] >= OPEN_HOUR) & (day_df["hour"] <= CLOSE_HOUR)].copy()
+    operating_df = day_df[
+        (day_df["hour"] >= OPEN_HOUR) & (day_df["hour"] <= CLOSE_HOUR)
+    ].copy()
     if operating_df.empty:
         operating_df = day_df.copy()
 
     # Rolling window of 90 minutes (9 ten-minute steps)
     window_steps = 9
     rolling_counts = (
-        operating_df["count"].rolling(window=window_steps, min_periods=window_steps).mean()
+        operating_df["count"]
+        .rolling(window=window_steps, min_periods=window_steps)
+        .mean()
     )
 
     if rolling_counts.isna().all():
         min_idx = operating_df["count"].idxmin()
         best_start = operating_df.loc[min_idx, "time_ampm"]
-        best_end = (operating_df.loc[min_idx, "datetime"] + timedelta(hours=1.5)).strftime("%I:%M %p").lstrip("0")
+        best_end = (
+            (operating_df.loc[min_idx, "datetime"] + timedelta(hours=1.5))
+            .strftime("%I:%M %p")
+            .lstrip("0")
+        )
         best_avg = operating_df.loc[min_idx, "count"]
     else:
         best_end_idx = rolling_counts.idxmin()
@@ -298,8 +306,16 @@ def find_visiting_recommendation(day_df: pd.DataFrame) -> dict[str, Any]:
     max_idx = operating_df["count"].idxmax()
     peak_time = operating_df.loc[max_idx, "time_ampm"]
     peak_count = round(float(operating_df.loc[max_idx, "count"]), 1)
-    peak_start = (operating_df.loc[max_idx, "datetime"] - timedelta(hours=1)).strftime("%I:%M %p").lstrip("0")
-    peak_end = (operating_df.loc[max_idx, "datetime"] + timedelta(hours=1)).strftime("%I:%M %p").lstrip("0")
+    peak_start = (
+        (operating_df.loc[max_idx, "datetime"] - timedelta(hours=1))
+        .strftime("%I:%M %p")
+        .lstrip("0")
+    )
+    peak_end = (
+        (operating_df.loc[max_idx, "datetime"] + timedelta(hours=1))
+        .strftime("%I:%M %p")
+        .lstrip("0")
+    )
 
     return {
         "best_window": f"{best_start} – {best_end}",
@@ -325,7 +341,15 @@ def predict_weekly_matrix(
     ref_dt = pd.Timestamp(reference_date)
     monday = ref_dt - timedelta(days=ref_dt.day_of_week)
 
-    day_names = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"]
+    day_names = [
+        "Monday",
+        "Tuesday",
+        "Wednesday",
+        "Thursday",
+        "Friday",
+        "Saturday",
+        "Sunday",
+    ]
     records = []
 
     for day_idx in range(7):
@@ -388,10 +412,16 @@ def compute_prediction_drivers(
 
     # 2. Semester effect (compare with outside semester)
     sem_off_input = make_calendar_input_frame(
-        [dt], temperature, is_holiday, is_during_semester=False, is_start_of_semester=False
+        [dt],
+        temperature,
+        is_holiday,
+        is_during_semester=False,
+        is_start_of_semester=False,
     )
     sem_off_pred = float(
-        predict_features(pipeline, build_feature_set(sem_off_input, scenario="forecast"))[0]
+        predict_features(
+            pipeline, build_feature_set(sem_off_input, scenario="forecast")
+        )[0]
     )
     sem_delta = curr_pred - sem_off_pred if is_during_semester else 0.0
 
@@ -400,7 +430,9 @@ def compute_prediction_drivers(
         [dt], 65.0, is_holiday, is_during_semester, is_start_of_semester
     )
     temp_ref_pred = float(
-        predict_features(pipeline, build_feature_set(temp_ref_input, scenario="forecast"))[0]
+        predict_features(
+            pipeline, build_feature_set(temp_ref_input, scenario="forecast")
+        )[0]
     )
     temp_delta = curr_pred - temp_ref_pred
 
@@ -410,7 +442,9 @@ def compute_prediction_drivers(
         [sunday_dt], temperature, is_holiday, is_during_semester, is_start_of_semester
     )
     dow_ref_pred = float(
-        predict_features(pipeline, build_feature_set(dow_ref_input, scenario="forecast"))[0]
+        predict_features(
+            pipeline, build_feature_set(dow_ref_input, scenario="forecast")
+        )[0]
     )
     dow_delta = curr_pred - dow_ref_pred if dt.weekday() < 5 else 0.0
 
@@ -436,11 +470,19 @@ def compute_prediction_drivers(
             }
             for _, row in shap_df.iterrows():
                 feat_raw = str(row["feature"])
-                clean_name = name_map.get(feat_raw, feat_raw.replace("numeric__", "").replace("categorical__", "").replace("_", " ").title())
-                top_shap.append({
-                    "feature": clean_name,
-                    "importance": round(float(row["mean_absolute_shap"]), 2)
-                })
+                clean_name = name_map.get(
+                    feat_raw,
+                    feat_raw.replace("numeric__", "")
+                    .replace("categorical__", "")
+                    .replace("_", " ")
+                    .title(),
+                )
+                top_shap.append(
+                    {
+                        "feature": clean_name,
+                        "importance": round(float(row["mean_absolute_shap"]), 2),
+                    }
+                )
         except Exception:
             pass
 
@@ -463,6 +505,7 @@ def compute_prediction_drivers(
 def _load_eda_aggregates():
     """Load and aggregate patterns from raw dataset for instant visualization."""
     from src.data import load_raw
+
     df = load_raw()
 
     # 1. Hourly weekday vs weekend
