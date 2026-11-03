@@ -1,11 +1,11 @@
-#                                Campus Gym Occupancy Forecaster
+# 🏋️ Campus Gym Occupancy Forecaster
 
 <div align="center">
 
 **An End-to-End Predictive Intelligence System & Interactive Operations Dashboard**  
 *Built for the **AWS Student Builder Group — VIT Vellore** Milestone Task*
 
-[![GitHub Repository](https://img.shields.io/badge/Repository-Karan--b01%2Fcampus--crowd--prediction-181717?style=flat-square&logo=github)](https://github.com/karan-b01/campus-crowd-prediction)
+[![GitHub Repository](https://img.shields.io/badge/Repository-Karan--b01%2FCampus--Crowd--Predictor-181717?style=flat-square&logo=github)](https://github.com/Karan-b01/Campus-Crowd-Predictor)
 [![Python Version](https://img.shields.io/badge/Python-3.10%20%7C%203.11%20%7C%203.12-3776AB?style=flat-square&logo=python&logoColor=white)](https://www.python.org/)
 [![Streamlit App](https://img.shields.io/badge/Streamlit-1.40%2B-FF4B4B?style=flat-square&logo=streamlit&logoColor=white)](https://streamlit.io/)
 [![Scikit-Learn](https://img.shields.io/badge/Scikit--Learn-1.5%2B-F7931E?style=flat-square&logo=scikitlearn&logoColor=white)](https://scikit-learn.org/)
@@ -37,9 +37,7 @@ The accompanying dashboard is built with a cohesive design system (**Deep Navy `
 ### 1. Live Forecast & Visit Advisor
 Interactive point-in-time forecasting displaying live occupancy estimates, operational capacity gauges, and natural-language scheduling guidance.
 
-<div align="center">
-  <img src="reports/figures/app_predict_desktop.png" alt="Live Forecast Desktop Dashboard" width="95%" />
-</div>
+![Live Forecast Desktop Dashboard](./reports/figures/app_predict_desktop.png)
 
 * **Dynamic KPI Summary:** Displays predicted occupant count, confidence range, and color-coded status badges:
   * 🟢 **Low** ($\le 21$ people): Ample open equipment; quiet training environment.
@@ -54,9 +52,7 @@ Interactive point-in-time forecasting displaying live occupancy estimates, opera
 ### 2. Weekly Workout Planner
 A 24-hour $\times$ 7-day crowd density matrix allowing students and facility managers to spot low-density workout slots across the full calendar week at a glance.
 
-<div align="center">
-  <img src="reports/figures/app_planner_desktop.png" alt="Weekly Workout Planner Heatmap" width="95%" />
-</div>
+![Weekly Workout Planner Heatmap](./reports/figures/app_planner_desktop.png)
 
 * **Hourly Matrix:** Heatmap density visualization across Monday through Sunday.
 * **Curated Time Windows:** Scheduled recommendations for *Early Bird* ($6:00 - 9:00\text{ AM}$), *Midday Lull* ($1:30 - 3:30\text{ PM}$), and *Late Night* ($9:30 - 11:00\text{ PM}$) lifting sessions.
@@ -66,9 +62,7 @@ A 24-hour $\times$ 7-day crowd density matrix allowing students and facility man
 ### 3. Exploratory Data Insights & Operational Patterns
 Interactive Plotly visualizations synthesizing historical patterns across 62,184 facility observations over 19 months.
 
-<div align="center">
-  <img src="reports/figures/app_insights_desktop.png" alt="Historical Exploratory Data Analysis Insights" width="95%" />
-</div>
+![Historical Exploratory Data Analysis Insights](./reports/figures/app_insights_desktop.png)
 
 * **Diurnal Dynamics:** Bimodal weekday curve surging to a primary peak at **6:00 PM** (mean $52.0$ people) versus weekend volume peaking earlier at **5:00 PM** (mean $39.3$ people).
 * **Weekly Cadence:** Tuesdays and Wednesdays record peak weekly density; attendance declines on Friday afternoons, with Sundays being the quietest day overall.
@@ -80,22 +74,16 @@ Interactive Plotly visualizations synthesizing historical patterns across 62,184
 ### 4. Model Architecture & Methodological Transparency
 Transparent system documentation detailing split boundaries, loss functions, test scorecards, and model governance limitations.
 
-<div align="center">
-  <img src="reports/figures/app_about_desktop.png" alt="Model Architecture and Methodology" width="95%" />
-</div>
+![Model Architecture and Methodology](./reports/figures/app_about_desktop.png)
 
 ---
 
 ### 5. Responsive Mobile Viewports
 The interface automatically detects screen geometry, collapsing secondary navigation panels and stacking KPI cards vertically to maintain complete touch responsiveness on mobile devices ($390 \times 844$).
 
-<div align="center">
-  <img src="reports/figures/app_predict_mobile.png" alt="Mobile Viewport Preview" width="30%" />
-  &nbsp;&nbsp;&nbsp;&nbsp;
-  <img src="reports/figures/app_planner_mobile.png" alt="Mobile Planner Preview" width="30%" />
-  &nbsp;&nbsp;&nbsp;&nbsp;
-  <img src="reports/figures/app_about_mobile.png" alt="Mobile About Preview" width="30%" />
-</div>
+| Live Forecast (Mobile) | Weekly Planner (Mobile) | Model & About (Mobile) |
+|:---:|:---:|:---:|
+| ![Mobile Forecast Preview](./reports/figures/app_predict_mobile.png) | ![Mobile Planner Preview](./reports/figures/app_planner_mobile.png) | ![Mobile About Preview](./reports/figures/app_about_mobile.png) |
 
 ---
 
@@ -244,8 +232,8 @@ campus-crowd-prediction/
 ### 1. Environment Setup
 ```bash
 # Clone repository
-git clone https://github.com/karan-b01/campus-crowd-prediction.git
-cd campus-crowd-prediction
+git clone https://github.com/Karan-b01/Campus-Crowd-Predictor.git
+cd Campus-Crowd-Predictor
 
 # Initialize virtual environment
 python -m venv .venv
@@ -283,7 +271,7 @@ ruff format --check src tests scripts app
 ## ☁️ Production Deployment
 
 ### Streamlit Community Cloud
-* **Repository:** `karan-b01/campus-crowd-prediction`
+* **Repository:** `Karan-b01/Campus-Crowd-Predictor`
 * **Branch:** `main`
 * **Entrypoint:** `app/app.py`
 * **Storage Footprint:** The production pipeline artifact ([`models/best_tuned_forecast_pipeline.joblib`](models/best_tuned_forecast_pipeline.joblib)) is optimized to **6.0 MB**, eliminating the need for Git LFS and comfortably fitting within Streamlit Cloud's 1 GB RAM allocation.
