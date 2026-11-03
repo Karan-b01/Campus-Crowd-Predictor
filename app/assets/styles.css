@@ -13,6 +13,8 @@
   --bg-card: #FFFFFF;
   --bg-secondary: #F1F5F9;
   --border-color: #E2E8F0;
+  --bg-banner: #F0FDFA;
+  --border-banner: #CCFBF1;
   --text-main: #0F172A;
   --text-muted: #64748B;
   --text-light: #94A3B8;
@@ -48,6 +50,8 @@
     --bg-card: #1E293B;
     --bg-secondary: #0F172A;
     --border-color: #334155;
+    --bg-banner: rgba(13, 148, 136, 0.16);
+    --border-banner: rgba(45, 212, 191, 0.35);
     --text-main: #F8FAFC;
     --text-muted: #94A3B8;
     --text-light: #64748B;
@@ -215,29 +219,28 @@
 
 /* Recommendation Box */
 .recommendation-banner {
-  background: linear-gradient(135deg, rgba(13, 148, 136, 0.08) 0%, rgba(13, 148, 136, 0.02) 100%);
-  border: 1px solid rgba(13, 148, 136, 0.3);
-  border-left: 4px solid var(--accent);
+  background: rgba(13, 148, 136, 0.14) !important;
+  border: 1px solid rgba(13, 148, 136, 0.35) !important;
+  border-left: 5px solid #0D9488 !important;
   border-radius: 12px;
-  padding: 1rem 1.25rem;
+  padding: 0.95rem 1.3rem;
   margin-top: 1rem;
-  margin-bottom: 1.5rem;
+  margin-bottom: 1.2rem;
 }
 
 .recommendation-title {
-  font-size: 0.95rem;
+  font-size: 1rem;
   font-weight: 700;
-  color: var(--accent);
+  color: #14B8A6 !important;
   display: flex;
   align-items: center;
   gap: 0.5rem;
-  margin-bottom: 0.3rem;
+  margin-bottom: 0.35rem;
 }
 
 .recommendation-text {
-  font-size: 0.92rem;
-  color: var(--text-main);
-  line-height: 1.45;
+  font-size: 0.93rem;
+  line-height: 1.55;
   margin: 0;
 }
 
@@ -245,16 +248,16 @@
 .drivers-container {
   background: var(--bg-card);
   border: 1px solid var(--border-color);
-  border-radius: 14px;
-  padding: 1.25rem 1.4rem;
-  margin-top: 1rem;
+  border-radius: 12px;
+  padding: 0.8rem 1.1rem;
+  margin-top: 0.5rem;
 }
 
 .driver-row {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 0.6rem 0;
+  padding: 0.45rem 0;
   border-bottom: 1px solid var(--border-color);
 }
 
@@ -343,3 +346,4 @@
     font-size: 1.8rem;
   }
 }
+
